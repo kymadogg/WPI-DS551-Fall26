@@ -1,0 +1,11 @@
+[project]
+name = "wpi-ds551-fall26"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = "==3.11.15"
+dependencies = [
+    "gymnasium[atari]==1.2.2",
+    "pygame>=2.6.1",
+    "pynose==1.5.5",
+]

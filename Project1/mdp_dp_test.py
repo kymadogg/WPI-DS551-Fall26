@@ -250,7 +250,7 @@ def test_render_single():
     p_pi, V_pi = policy_iteration(env.P, nS, nA, random_policy,tol=1e-8)
     env.reset(seed=2026)
     env.action_space.seed(2026)
-    r_pi = render_single(env, p_pi, False, 50)
+    r_pi = render_single(env, p_pi, False, 50) # used to be False, 50, 
    #  print("total rewards of PI: ",r_pi)
     
    #  print("\n" + "-"*25 + "\nBeginning Value Iteration\n" + "-"*25)
@@ -258,7 +258,7 @@ def test_render_single():
     p_vi, V_vi = value_iteration(env.P, nS, nA, V,tol=1e-8)
     env.reset(seed=2027)
     env.action_space.seed(2027)
-    r_vi = render_single(env, p_vi, False, 50)
+    r_vi = render_single(env, p_vi, False, 50) # used to be False, 50, 
    #  print("total rewards of VI: ",r_vi)
     
     

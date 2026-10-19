@@ -34,11 +34,10 @@ def initial_policy(observation):
         0: STICK
         1: HIT
     """
-    ############################
-    # YOUR IMPLEMENTATION HERE #
-    #                          #
-    ############################
-    return action
+    if observation[0] >= 20:
+        return 0
+    else:
+        return 1
 
 
 def mc_prediction(policy, env, n_episodes, gamma=1.0):
@@ -60,17 +59,32 @@ def mc_prediction(policy, env, n_episodes, gamma=1.0):
     V: defaultdict(float)
         A dictionary that maps from state to value
     """
+
     # initialize empty dictionaries
     returns_sum = defaultdict(float)
     returns_count = defaultdict(float)
     # a nested dictionary that maps state -> value
     V = defaultdict(float)
 
-    ############################
-    # YOUR IMPLEMENTATION HERE #
-    #                          #
-    ############################
+    for e in range(n_episodes):
+        e = []
+        s, _ = env.reset() # initialize states
+        done = False
+        while not done:
+            a = policy(s)
+            s_next, r, terminated, truncated, _ = env.step(a)
+            done = terminated or truncated
+            e.append((s, a, r))
+            s = s_next
 
+        G = 0
+        for t in reversed(range(len(e))):
+            s_t, a_t, reward_t = e[t]
+            G = gamma * G + reward_t
+            if s_t not in [x[0] for x in e[:t]]:
+                returns_sum[s_t] += G
+                returns_count[s_t] += 1.0
+                V[s_t] = returns_sum[s_t] / returns_count[s_t]
     return V
 
 
@@ -98,11 +112,15 @@ def epsilon_greedy(Q, state, nA, epsilon=0.1):
     With probability (1 - epsilon) choose the greedy action.
     With probability epsilon choose an action at random.
     """
-    ############################
-    # YOUR IMPLEMENTATION HERE #
-    #                          #
-    ############################
-    return action
+   
+    a_val = Q[state]
+    a_best = np.argmax(a_val)
+    if random.random() < epsilon:
+        a = random.randint(0, nA - 1)
+    else:
+        a = a_best
+
+    return a
 
 
 def mc_control_epsilon_greedy(env, n_episodes, gamma=1.0, epsilon=0.1):
@@ -132,13 +150,38 @@ def mc_control_epsilon_greedy(env, n_episodes, gamma=1.0, epsilon=0.1):
 
     returns_sum = defaultdict(float)
     returns_count = defaultdict(float)
-    # a nested dictionary that maps state -> (action -> action-value)
-    # e.g. Q[state] = np.darrary(nA)
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
 
-    ############################
-    # YOUR IMPLEMENTATION HERE #
-    #                          #
-    ############################
+    for ep_idx in range(n_episodes):
+        # decay epsilon
+        epsilon = max(0.1, epsilon - 0.1 / n_episodes)
+        
+        history = []
+        state, _ = env.reset()
+        active = True
+        
+        # generate an episode sequence
+        while active:
+            action = epsilon_greedy(Q, state, env.action_space.n, epsilon)
+            next_state, reward, term, trunc, _ = env.step(action)
+            
+            history.append((state, action, reward))
+            active = not (term or trunc)
+            state = next_state
+
+        # First-visit policy eval through the history
+        g_return = 0
+        total_steps = len(history)
+        
+        for t in reversed(range(total_steps)):
+            state_t, action_t, reward_t = history[t]
+            g_return = gamma * g_return + reward_t
+            
+            # see if it appears in history
+            if (state_t, action_t) not in [(step[0], step[1]) for step in history[:t]]:
+                pair = (state_t, action_t)
+                returns_sum[pair] += g_return
+                returns_count[pair] += 1.0
+                Q[state_t][action_t] = returns_sum[pair] / returns_count[pair]
 
     return Q
