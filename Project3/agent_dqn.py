@@ -16,7 +16,7 @@ from dqn_model import DQN
 you can import any package and define any extra function as you need
 """
 
-import wandb
+
 
 torch.manual_seed(595)
 np.random.seed(595)
@@ -51,10 +51,10 @@ wandb_config = {
 }
 
 # Initialize wandb
-wandb.init(
-    project=wandb_config["project"],
-    config=wandb_config["config"]
-)
+# wandb.init(
+#     project=wandb_config["project"],
+#     config=wandb_config["config"]
+# )
 
 
 # Select to use CPU, CUDA, or MPS
@@ -106,7 +106,7 @@ class Agent_DQN(Agent):
         self.env = env
         self.eps = EPSILON_START
         
-        wandb.watch(self.policy_net, log="all")
+        #wandb.watch(self.policy_net, log="all")
             
         
         if args.test_dqn:
@@ -217,14 +217,14 @@ class Agent_DQN(Agent):
             average_q_value = total_q_value / loss_count if loss_count > 0 else 0
                 
  
-            wandb.log({
-                "episode_number": episode,
-                "epsilon": self.eps,
-                "episode_reward": episode_reward,
-                "episode_steps": episode_steps,
-                "average_model_loss": average_loss,
-                "average_model_q_value": average_q_value
-            })
+            # wandb.log({
+            #     "episode_number": episode,
+            #     "epsilon": self.eps,
+            #     "episode_reward": episode_reward,
+            #     "episode_steps": episode_steps,
+            #     "average_model_loss": average_loss,
+            #     "average_model_q_value": average_q_value
+            # })
             
             if episode % 100000 == 0:
                 torch.save(self.policy_net.state_dict(), f'model_episode_{episode}.pth')
