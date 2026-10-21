@@ -192,9 +192,8 @@ class Agent_DQN(Agent):
 
             percent_done = (episode / NUM_GAMES)*100
                 
-
-            # logging for colab
-            print(f"status: {percent_done:.4f}% | epsilon: {self.eps:.8f} | reward: {episode_reward} | steps: {episode_steps} | avg loss: {average_loss:.4f} | avg q value {average_q_value:.4f}")
+            if episode % (NUM_GAMES / 50) == 0 or reward > 2.0:
+                print(f"status: {percent_done:.4f}% | epsilon: {self.eps:.8f} | reward: {episode_reward} | steps: {episode_steps} | avg loss: {average_loss:.4f} | avg q value {average_q_value:.4f}")
             
             if episode % (NUM_GAMES / 100) == 0:
                 torch.save(self.policy_net.state_dict(), f'model_episode_{episode}.pth')

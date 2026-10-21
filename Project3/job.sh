@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH -A cs551
-#SBATCH -p academic
+#SBATCH -p short
 #SBATCH -N 1
 #SBATCH -c 8
 #SBATCH --gres=gpu:1
