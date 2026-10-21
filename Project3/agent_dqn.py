@@ -16,12 +16,11 @@ from dqn_model import DQN
 you can import any package and define any extra function as you need
 """
 
-
-
 torch.manual_seed(595)
 np.random.seed(595)
 random.seed(595)
 
+# TODO: make arguments to pass into main
 EPSILON_START = 0.9
 EPSILON_END = 0.025
 NUM_GAMES = 1000000
@@ -49,12 +48,6 @@ wandb_config = {
         "num_games": NUM_GAMES
     }
 }
-
-# Initialize wandb
-# wandb.init(
-#     project=wandb_config["project"],
-#     config=wandb_config["config"]
-# )
 
 
 # Select to use CPU, CUDA, or MPS
@@ -106,7 +99,6 @@ class Agent_DQN(Agent):
         self.env = env
         self.eps = EPSILON_START
         
-        #wandb.watch(self.policy_net, log="all")
             
         if args.test_dqn:
             #you can load your model here
@@ -195,7 +187,6 @@ class Agent_DQN(Agent):
                 
                 if done or truncated: break
 
-
                 self.replay_buffer.push(observation, action, next_observation, reward)
                 observation = next_observation
                 episode_reward += reward
@@ -215,17 +206,9 @@ class Agent_DQN(Agent):
             average_loss = total_loss / loss_count if loss_count > 0 else 0
             average_q_value = total_q_value / loss_count if loss_count > 0 else 0
                 
- 
-            # wandb.log({
-            #     "episode_number": episode,
-            #     "epsilon": self.eps,
-            #     "episode_reward": episode_reward,
-            #     "episode_steps": episode_steps,
-            #     "average_model_loss": average_loss,
-            #     "average_model_q_value": average_q_value
-            # })
 
-            print(f"episode number: {episode} | epsilon: {self.eps} | episode reward: {episode_reward} | episode_steps: {episode_steps}")
+            # logging for colab
+            print(f"status: {(episode/NUM_GAMES)*100}% | epsilon: {self.eps} | reward: {episode_reward} | steps: {episode_steps} | avg loss: {average_loss} | avg q value {average_q_value}")
             
             if episode % 100000 == 0:
                 torch.save(self.policy_net.state_dict(), f'model_episode_{episode}.pth')
