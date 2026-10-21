@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#SBATCH -A cs551
+#SBATCH -A gftabor
 #SBATCH -p short
 #SBATCH -N 1
 #SBATCH -c 8
