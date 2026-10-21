@@ -7,7 +7,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH -C A30
 #SBATCH -t 12:00:00
-#SBATCH --mem 12G
+#SBATCH --mem 8G
 #SBATCH --job-name="P3"
 
 # install uv
