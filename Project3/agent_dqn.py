@@ -210,7 +210,7 @@ class Agent_DQN(Agent):
                 
 
             # logging for colab
-            print(f"status: {percent_done:4.f}% | epsilon: {self.eps:8.f} | reward: {episode_reward} | steps: {episode_steps} | avg loss: {average_loss:4.f} | avg q value {average_q_value:4.f}")
+            print(f"status: {percent_done:.4f}% | epsilon: {self.eps:.8f} | reward: {episode_reward} | steps: {episode_steps} | avg loss: {average_loss:.4f} | avg q value {average_q_value:.4f}")
             
             if episode % 100000 == 0:
                 torch.save(self.policy_net.state_dict(), f'model_episode_{episode}.pth')
