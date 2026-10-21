@@ -12,6 +12,7 @@
 
 # install uv
 wget -qO- https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
 
 # move into directory
 cd WPI-DS551-Fall26
