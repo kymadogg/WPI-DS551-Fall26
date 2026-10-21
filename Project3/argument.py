@@ -13,7 +13,7 @@ def add_arguments(parser):
     ---
     EPSILON_START = 0.9
     EPSILON_END = 0.025
-    NUM_GAMES = 1000000
+    NUM_GAMES = 1_000_000
     EPSILON_DECAY = (EPSILON_START - EPSILON_END) / NUM_GAMES
     LEARNING_RATE = 1e-4
     BATCH_SIZE = 32
