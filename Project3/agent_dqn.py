@@ -33,22 +33,6 @@ START_REPLAY_MEMORY_SIZE = 5000
 STEPS_FOR_UPDATE = 5000
 
 
-wandb_config = {
-    "project": "dqn-breakout",
-    "config": {
-        "learning_rate": LEARNING_RATE,
-        "batch_size": BATCH_SIZE,
-        "gamma": GAMMA,
-        "epsilon_start": EPSILON_START,
-        "epsilon_end": EPSILON_END,
-        "epsilon_decay": EPSILON_DECAY,
-        "replay_memory_size": REPLAY_MEMORY_SIZE,
-        "start_replay_memory_size": START_REPLAY_MEMORY_SIZE,
-        "steps_for_update": STEPS_FOR_UPDATE,
-        "num_games": NUM_GAMES
-    }
-}
-
 
 # Select to use CPU, CUDA, or MPS
 device = torch.device(
