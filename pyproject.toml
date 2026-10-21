@@ -8,8 +8,10 @@ dependencies = [
     "autorom[accept-rom-license]>=0.6.1",
     "gymnasium[atari]==1.2.2",
     "ipywidgets>=8.1.9",
+    "opencv-python>=5.0.0.93",
     "pygame>=2.6.1",
     "pynose==1.5.5",
     "ray[rllib]>=2.59.0",
     "torch>=2.14.1",
+    "tqdm>=4.70.1",
 ]

@@ -108,7 +108,6 @@ class Agent_DQN(Agent):
         
         #wandb.watch(self.policy_net, log="all")
             
-        
         if args.test_dqn:
             #you can load your model here
             print('loading trained model')
@@ -225,6 +224,8 @@ class Agent_DQN(Agent):
             #     "average_model_loss": average_loss,
             #     "average_model_q_value": average_q_value
             # })
+
+            print(f"episode number: {episode} | epsilon: {self.eps} | episode reward: {episode_reward} | episode_steps: {episode_steps}")
             
             if episode % 100000 == 0:
                 torch.save(self.policy_net.state_dict(), f'model_episode_{episode}.pth')
