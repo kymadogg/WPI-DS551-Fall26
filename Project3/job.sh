@@ -10,15 +10,29 @@
 #SBATCH --mem 8G
 #SBATCH --job-name="P3"
 
-# install uv
-wget -qO- https://astral.sh/uv/install.sh | sh
-export PATH="$HOME/.local/bin:$PATH"
+# conda setup
+# curl -O https://repo.anaconda.com/archive/Anaconda3-2026.07-1-Linux-x86_64.sh
+# bash ./Anaconda3-2026.07-1-Linux-x86_64.sh -b -p $HOME/anaconda3
+# source ~/anaconda3/bin/activate
 
-# move into directory
-cd WPI-DS551-Fall26
+# miniconda setup
+curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash ./Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda3
+source ~/miniconda3/bin/activate
+conda init --all
 
-# sync dependencies
-uv sync
+# make environment
+conda create -n myenv python=3.11
+conda activate myenv
 
-# train dqn
-uv run Project3/main.py --train_dqn
+# install depencencies 
+pip install opencv-python-headless "gymnasium[atari]==1.2.2" autorom[accept-rom-license]
+pip install -U "ray[rllib]" ipywidgets
+conda install -c conda-forge moviepy, conda install -c conda-forge ffmpeg, conda update ffmpeg
+conda install -c conda-forge tqdm
+
+# install pytorch (CUDA 13.2)
+pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu132
+
+source activate myenv # maybe remove??
+python main.py --train_dqn
