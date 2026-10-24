@@ -12,7 +12,9 @@ conda activate myenv
 
 pip install opencv-python-headless "gymnasium[atari]==1.2.2" autorom[accept-rom-license]
 pip install -U "ray[rllib]" ipywidgets
-conda install -c conda-forge moviepy, conda install -c conda-forge ffmpeg, conda update ffmpeg
+conda install -c conda-forge moviepy
+conda install -c conda-forge ffmpeg 
+conda update ffmpeg
 conda install -c conda-forge tqdm
 
 # install pytorch (CUDA 13.2)
