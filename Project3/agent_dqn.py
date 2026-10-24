@@ -90,7 +90,7 @@ class Agent_DQN(Agent):
 
         self.env = env
         self.eps = EPSILON_START
-        
+        self.rewards = []
             
         if args.test_dqn:
             #you can load your model here
@@ -167,7 +167,6 @@ class Agent_DQN(Agent):
            
             episode_steps = 0
             episode_reward = 0
-            rewards = []
             
             total_loss = 0
             total_q_value = 0
@@ -206,8 +205,8 @@ class Agent_DQN(Agent):
             #print(f"status: {percent_done:.4f}% | epsilon: {self.eps:.8f} | reward: {episode_reward} | steps: {episode_steps} | avg loss: {average_loss:.4f} | avg q value {average_q_value:.4f}")
             logging.info(f"{episode}, {self.eps}, {episode_reward}, {episode_steps}, {avg_loss}, {avg_q_val}")
 
-            rewards.append(episode_reward)
-            avg_reward = np.mean(rewards)
+            self.rewards.append(episode_reward)
+            avg_reward = np.mean(self.rewards)
 
             print(f"status: {percent} | avg_reward: {avg_reward}")
 

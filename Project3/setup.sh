@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # conda setup
-curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash ./Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda3
-source ~/miniconda3/bin/activate
+# curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+# bash ./Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda3
+# source ~/miniconda3/bin/activate
 conda init --all
 
 # make environment
