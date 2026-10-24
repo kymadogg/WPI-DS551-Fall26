@@ -9,14 +9,5 @@
 #SBATCH --mem 8G
 #SBATCH --job-name="P3"
 
-conda init --all
-conda activate myenv
-
-# pip install opencv-python-headless "gymnasium[atari]==1.2.2" autorom[accept-rom-license]
-# pip install -U "ray[rllib]" ipywidgets
-# conda install -c conda-forge moviepy, conda install -c conda-forge ffmpeg, conda update ffmpeg
-# conda install -c conda-forge tqdm
-
-# pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu132
-
+source activate myenv
 python main.py --train_dqn
