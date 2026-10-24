@@ -20,7 +20,7 @@ torch.manual_seed(595)
 np.random.seed(595)
 random.seed(595)
 
-logging.basicConfig(filename="dqn_test.log",
+logging.basicConfig(filename="dqn_train_50k.log",
                     format='',
                     filemode='w')
 
@@ -30,7 +30,7 @@ logger.setLevel(logging.DEBUG)
 # TODO: make arguments to pass into main
 EPSILON_START = 0.9
 EPSILON_END = 0.025
-NUM_GAMES = 20_000
+NUM_GAMES = 50_000
 EPSILON_DECAY = (EPSILON_START - EPSILON_END) / NUM_GAMES
 LEARNING_RATE = 1e-4
 BATCH_SIZE = 32
@@ -211,7 +211,7 @@ class Agent_DQN(Agent):
             logging.info(f"{episode}, {self.eps:.4f}, {rolling_avg:.4f}, {avg_loss:.4f}, {avg_q_val:.4f}")
 
             if rolling_avg > 0:
-                torch.save(self.policy_net.state_dict(), f'model.pth') # overwrite so latest always exists
+                torch.save(self.policy_net.state_dict(), f'model_50k.pth') # overwrite so latest always exists
                 
             self.eps = max(EPSILON_END, self.eps - EPSILON_DECAY)
 
