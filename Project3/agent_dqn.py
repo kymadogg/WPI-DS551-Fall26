@@ -4,6 +4,7 @@ import random
 import numpy as np
 from collections import deque, namedtuple
 import logging
+import os
 
 import torch #type: ignore
 import torch.nn.functional as F #type: ignore
@@ -19,7 +20,7 @@ torch.manual_seed(595)
 np.random.seed(595)
 random.seed(595)
 
-logging.basicConfig(filename="dqn_train_%(asctime)s.log",
+logging.basicConfig(filename="dqn_test.log",
                     format='',
                     filemode='w')
 
@@ -76,7 +77,11 @@ class Agent_DQN(Agent):
         """
 
         super(Agent_DQN,self).__init__(env)
-        
+
+        self.model_path = os.path.join(os.getcwd(),'model.pth')
+        print(f'Model path: {self.model_path}')
+        print(f"Model found: {os.path.exists(self.model_path)}")
+
         self.policy_net = DQN().to(device)
         self.target_net = DQN().to(device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
@@ -92,15 +97,13 @@ class Agent_DQN(Agent):
         self.last_thirty = deque(maxlen=30)
             
         if args.test_dqn:
-            # you can load your model here
+            self.policy_net.load_state_dict(torch.load(self.model_path, map_location=device))
+            self.policy_net.eval()
             print('loading trained model')
 
-            
         # logging.info(f"Beginning training: {NUM_GAMES} games | decay = {EPSILON_DECAY} | epsilon range {EPSILON_START} - {EPSILON_END}")
         logging.info("episode, epsilon, rolling average (30 games), average loss, average Q values")
-
-            
-            
+    
 
     def init_game_setting(self):
         """

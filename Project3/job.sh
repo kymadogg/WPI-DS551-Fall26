@@ -9,6 +9,5 @@
 #SBATCH --mem 12G
 #SBATCH --job-name="P3"
 
-conda init --all
 source activate myenv
 python main.py --train_dqn
