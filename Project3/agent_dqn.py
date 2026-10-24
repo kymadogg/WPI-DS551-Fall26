@@ -3,8 +3,6 @@
 import random
 import numpy as np
 from collections import deque, namedtuple
-import os
-import sys
 import logging
 
 import torch #type: ignore
@@ -21,8 +19,8 @@ torch.manual_seed(595)
 np.random.seed(595)
 random.seed(595)
 
-logging.basicConfig(filename="dqn_train.log",
-                    format='%(asctime)s %(levelname)s: %(message)s',
+logging.basicConfig(filename="dqn_train_%(asctime)s.log",
+                    format='',
                     filemode='w')
 
 logger = logging.getLogger()
@@ -40,7 +38,6 @@ REPLAY_MEMORY_SIZE = 10_000
 START_REPLAY_MEMORY_SIZE = 5_000
 STEPS_FOR_UPDATE = 5_000
 
-THRESHOLD = 10.0
 
 # Select to use CPU, CUDA, or MPS
 device = torch.device(
@@ -90,12 +87,18 @@ class Agent_DQN(Agent):
 
         self.env = env
         self.eps = EPSILON_START
-        self.rewards = []
+
+        # tracking the last 30 runs
+        self.last_thirty = deque(maxlen=30)
             
         if args.test_dqn:
-            #you can load your model here
+            # you can load your model here
             print('loading trained model')
-        logging.debug("episode,")
+
+            
+        # logging.info(f"Beginning training: {NUM_GAMES} games | decay = {EPSILON_DECAY} | epsilon range {EPSILON_START} - {EPSILON_END}")
+        logging.info("episode, epsilon, rolling average (30 games), average loss, average Q values")
+
             
             
 
@@ -199,20 +202,13 @@ class Agent_DQN(Agent):
             avg_loss = total_loss / loss_count if loss_count > 0 else 0
             avg_q_val = total_q_value / loss_count if loss_count > 0 else 0
 
-            percent = (episode / NUM_GAMES)*100
+            self.last_thirty.append(episode_reward)
+            rolling_avg = np.mean(self.last_thirty)
                 
-            # if episode % (NUM_GAMES / 50) == 0 or reward > 2.0:
-            #print(f"status: {percent_done:.4f}% | epsilon: {self.eps:.8f} | reward: {episode_reward} | steps: {episode_steps} | avg loss: {average_loss:.4f} | avg q value {average_q_value:.4f}")
-            logging.info(f"{episode}, {self.eps}, {episode_reward}, {episode_steps}, {avg_loss}, {avg_q_val}")
+            logging.info(f"{episode}, {self.eps:.4f}, {rolling_avg:.4f}, {avg_loss:.4f}, {avg_q_val:.4f}")
 
-            self.rewards.append(episode_reward)
-            avg_reward = np.mean(self.rewards)
-
-            print(f"status: {percent} | avg_reward: {avg_reward}")
-
-            if avg_reward >= THRESHOLD:
-                torch.save(self.policy_net.state_dict(), f'model_episode_{episode}.pth')
-                print("weights recorded!")
+            if rolling_avg > 0:
+                torch.save(self.policy_net.state_dict(), f'model.pth') # overwrite so latest always exists
                 
             self.eps = max(EPSILON_END, self.eps - EPSILON_DECAY)
 
