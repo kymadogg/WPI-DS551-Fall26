@@ -5,10 +5,11 @@ import numpy as np
 from collections import deque, namedtuple
 import os
 import sys
+import logging
 
-import torch
-import torch.nn.functional as F
-import torch.optim as optim
+import torch #type: ignore
+import torch.nn.functional as F #type: ignore
+import torch.optim as optim #type: ignore
 
 from agent import Agent
 from dqn_model import DQN
@@ -23,15 +24,14 @@ random.seed(595)
 # TODO: make arguments to pass into main
 EPSILON_START = 0.9
 EPSILON_END = 0.025
-NUM_GAMES = 20000
+NUM_GAMES = 20_000
 EPSILON_DECAY = (EPSILON_START - EPSILON_END) / NUM_GAMES
 LEARNING_RATE = 1e-4
 BATCH_SIZE = 32
 GAMMA = 0.99
-REPLAY_MEMORY_SIZE = 10000
-START_REPLAY_MEMORY_SIZE = 5000
-STEPS_FOR_UPDATE = 5000
-
+REPLAY_MEMORY_SIZE = 10_000
+START_REPLAY_MEMORY_SIZE = 5_000
+STEPS_FOR_UPDATE = 5_000
 
 
 # Select to use CPU, CUDA, or MPS
@@ -192,8 +192,8 @@ class Agent_DQN(Agent):
 
             percent_done = (episode / NUM_GAMES)*100
                 
-            if episode % (NUM_GAMES / 50) == 0 or reward > 2.0:
-                print(f"status: {percent_done:.4f}% | epsilon: {self.eps:.8f} | reward: {episode_reward} | steps: {episode_steps} | avg loss: {average_loss:.4f} | avg q value {average_q_value:.4f}")
+            # if episode % (NUM_GAMES / 50) == 0 or reward > 2.0:
+            print(f"status: {percent_done:.4f}% | epsilon: {self.eps:.8f} | reward: {episode_reward} | steps: {episode_steps} | avg loss: {average_loss:.4f} | avg q value {average_q_value:.4f}")
             
             if episode % (NUM_GAMES / 100) == 0:
                 torch.save(self.policy_net.state_dict(), f'model_episode_{episode}.pth')

@@ -1,4 +1,4 @@
-import torch
+import torch #type: ignore
 
 # make sure i set things up correctly 
 print(f"PyTorch version: {torch.__version__}")

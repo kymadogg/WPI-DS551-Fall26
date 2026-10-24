@@ -33,6 +33,4 @@ conda install -c conda-forge tqdm
 
 # install pytorch (CUDA 13.2)
 pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu132
-
-source activate myenv # maybe remove??
 python main.py --train_dqn

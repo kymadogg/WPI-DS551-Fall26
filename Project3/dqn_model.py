@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import torch.nn as nn
-import torch.nn.functional as F
+import torch.nn as nn #type: ignore
+import torch.nn.functional as F #type: ignore
 
 
 class DQN(nn.Module):
