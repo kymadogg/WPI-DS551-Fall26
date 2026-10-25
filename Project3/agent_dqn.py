@@ -21,12 +21,12 @@ torch.manual_seed(595)
 np.random.seed(595)
 random.seed(595)
 
-logging.basicConfig(filename="dqn_train_50k.log",
-                    format='',
-                    filemode='w')
+# logging.basicConfig(filename="dqn_train_50k.log",
+#                     format='',
+#                     filemode='w')
 
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger()
+# logger.setLevel(logging.DEBUG)
 
 
 # TODO: make arguments to pass into main
