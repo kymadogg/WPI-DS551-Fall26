@@ -5,7 +5,8 @@ import numpy as np
 from collections import deque, namedtuple
 import logging
 import os
-
+from argument import add_arguments
+import argparse
 import torch #type: ignore
 import torch.nn.functional as F #type: ignore
 import torch.optim as optim #type: ignore
@@ -27,11 +28,10 @@ logging.basicConfig(filename="dqn_train_50k.log",
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
+
 # TODO: make arguments to pass into main
 EPSILON_START = 0.9
 EPSILON_END = 0.025
-NUM_GAMES = 50_000
-EPSILON_DECAY = (EPSILON_START - EPSILON_END) / NUM_GAMES
 LEARNING_RATE = 1e-4
 BATCH_SIZE = 32
 GAMMA = 0.99
@@ -75,10 +75,21 @@ class Agent_DQN(Agent):
             parameters for q-learning; decaying epsilon-greedy
             ...
         """
-
         super(Agent_DQN,self).__init__(env)
 
-        self.model_path = os.path.join(os.getcwd(),'model.pth')
+        # arguments
+        self.trials = args.trials
+        self.decay = (EPSILON_START - EPSILON_END) / self.trials
+        self.filename = args.name
+
+        logging.basicConfig(filename=f"dqn_train_{args.name}.log",
+                    format='',
+                    filemode='w')
+
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+
+        self.model_path = os.path.join(os.getcwd(),f'model_{args.name}.pth')
         print(f'Model path: {self.model_path}')
         print(f"Model found: {os.path.exists(self.model_path)}")
 
@@ -101,7 +112,6 @@ class Agent_DQN(Agent):
             self.policy_net.eval()
             print('loading trained model')
 
-        # logging.info(f"Beginning training: {NUM_GAMES} games | decay = {EPSILON_DECAY} | epsilon range {EPSILON_START} - {EPSILON_END}")
         logging.info("episode, epsilon, rolling average (30 games), average loss, average Q values")
     
 
@@ -125,7 +135,7 @@ class Agent_DQN(Agent):
                 the predicted action from trained model
         """
         observation = torch.tensor(observation, dtype=torch.float32).unsqueeze(0).permute(0, 3, 1, 2).to(device) 
-        ## format tensor(BATCH_SIZE, channels, height, width)
+        # format tensor(BATCH_SIZE, channels, height, width)
         
         if random.random() < self.eps and not test:  # Exploration
             return self.env.get_random_action()
@@ -169,7 +179,7 @@ class Agent_DQN(Agent):
         """
         global_steps = 0
 
-        for episode in range(NUM_GAMES):
+        for episode in range(self.trials):
            
             episode_steps = 0
             episode_reward = 0
@@ -211,9 +221,9 @@ class Agent_DQN(Agent):
             logging.info(f"{episode}, {self.eps:.4f}, {rolling_avg:.4f}, {avg_loss:.4f}, {avg_q_val:.4f}")
 
             if rolling_avg > 0:
-                torch.save(self.policy_net.state_dict(), f'model_50k.pth') # overwrite so latest always exists
+                torch.save(self.policy_net.state_dict(), f'model_{self.filename}.pth') # overwrite so latest always exists
                 
-            self.eps = max(EPSILON_END, self.eps - EPSILON_DECAY)
+            self.eps = max(EPSILON_END, self.eps - self.decay)
 
     def update_policy(self):
 

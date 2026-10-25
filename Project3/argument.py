@@ -22,6 +22,6 @@ def add_arguments(parser):
     START_REPLAY_MEMORY_SIZE = 5000
     STEPS_FOR_UPDATE = 5000
     '''
-
-    parser.add_argument('--')
+    parser.add_argument('--trials', type=int, default=50_000, help='number of games to play for training')
+    parser.add_argument('--name', type=str, default="default", help='name of the log file and model weights')
     return parser

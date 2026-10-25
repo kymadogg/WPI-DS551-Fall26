@@ -5,7 +5,7 @@
 #SBATCH -c 8
 #SBATCH --gres=gpu:1
 #SBATCH -C H100
-#SBATCH -t 12:00:00
+#SBATCH -t 24:00:00
 #SBATCH --mem 12G
 #SBATCH --job-name="P3"
 
