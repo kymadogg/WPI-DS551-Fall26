@@ -74,6 +74,7 @@ class Agent_DQN(Agent):
 
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
+        self.test = False
 
         if args.test_dqn:
             if not os.path.exists(self.model_path):
@@ -85,6 +86,8 @@ class Agent_DQN(Agent):
                 torch.load(self.model_path, map_location=self.device)
             )
             self.policy_net.eval()
+
+            self.test = True
 
         # docs: 
         self.optimizer = optim.AdamW(self.policy_net.parameters(), lr=self.learning_rate, amsgrad=True)
@@ -175,7 +178,7 @@ class Agent_DQN(Agent):
             t_i = 0 # index
             
             while True:
-                action = self.make_action(state)
+                action = self.make_action(state, self.test)
                 observation, reward, done, truncated, _ = self.env.step(action)
                 t_reward += reward
                 

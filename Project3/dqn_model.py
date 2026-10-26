@@ -36,10 +36,8 @@ class DQN(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.Flatten(),
-            nn.Dropout(0.25),
             nn.Linear(20736, 100),
             nn.ReLU(),
-            nn.Dropout(0.25),
             nn.Linear(100, num_actions)
         )
 
