@@ -123,7 +123,12 @@ class Agent_DQN(Agent):
 
         sample = random.random()
 
-        self.epsilon_threshold = self.epsilon_start - (self.epsilon_start - self.epsilon_end) / np.float32(self.num_episodes) * np.float32(self.episode)
+        self.epsilon_threshold = (
+            self.epsilon_start
+            - (self.epsilon_start - self.epsilon_end)
+            / np.float32(self.num_episodes)
+            * np.float32(self.episode)
+        )
         self.action_steps_done += 1
 
         if test or sample > self.epsilon_threshold: # explore or exploit
@@ -175,7 +180,10 @@ class Agent_DQN(Agent):
     
                 state = next_state
 
-                if len(self.buffer) < self.batch_size: # could be if len(self.replay_memory) < self.batch_size: maybe?
+                if done or truncated:
+                    break
+
+                if len(self.buffer) < self.batch_size:
                     continue
                 
                 transitions = self.replay_buffer()
