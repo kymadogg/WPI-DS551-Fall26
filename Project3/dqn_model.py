@@ -3,7 +3,6 @@
 import torch.nn as nn #type: ignore
 import torch.nn.functional as F #type: ignore
 
-
 class DQN(nn.Module):
     """Initialize a deep Q-learning network
 
@@ -50,7 +49,7 @@ class DQN(nn.Module):
         a Tensor of output data. We can use Modules defined in the constructor as
         well as arbitrary operators on Tensors.
         """
-        
+
         # Normalize input
         x = x / 255.0
         x = self.network(x)

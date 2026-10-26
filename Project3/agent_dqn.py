@@ -6,7 +6,6 @@ import numpy as np
 from collections import deque, namedtuple
 import logging
 import os
-from argument import add_arguments
 
 import torch #type:ignore
 import torch.nn as nn #type:ignore
@@ -74,7 +73,7 @@ class Agent_DQN(Agent):
         self.target_net = DQN().to(self.device)
 
         # state disctionaries
-        self.policy_net.load_state_dict(torch.load("outputs_final/models_final/model_old.pth", map_location=torch.device(self.device)))
+        self.policy_net.load_state_dict(torch.load(self.model_path, map_location=torch.device(self.device)))
         self.target_net.load_state_dict(self.policy_net.state_dict())
 
         # docs: 
@@ -186,17 +185,17 @@ class Agent_DQN(Agent):
                 non_final_next_state_list = [torch.tensor(s, device=self.device).unsqueeze(0) for s in batch.next_state if s is not None]        
                 non_final_next_state = torch.cat(non_final_next_state_list, dim=0)
             
-                state_batch = torch.tensor(np.array(batch.state), device=self.device)
-                action_batch = torch.tensor(batch.action, device=self.device)
-                reward_batch = torch.tensor(batch.reward, device=self.device)
-                state_batch = state_batch.permute([0,3,1,2])
+                s_batch = torch.tensor(np.array(batch.state), device=self.device)
+                a_batch = torch.tensor(batch.action, device=self.device)
+                r_batch = torch.tensor(batch.reward, device=self.device)
+                s_batch = s_batch.permute([0,3,1,2])
                 
                 batch_policy = torch.zeros(self.batch_size, device=self.device)
-                batch_policy_all = self.policy_net(state_batch)
+                batch_policy_all = self.policy_net(s_batch)
                 
                 for idx in range(self.batch_size):
                     
-                    batch_policy[idx] = batch_policy_all[idx][action_batch[idx]]
+                    batch_policy[idx] = batch_policy_all[idx][a_batch[idx]]
                     
                 batch_target_next = torch.zeros(self.batch_size, device=self.device)
 
@@ -204,7 +203,7 @@ class Agent_DQN(Agent):
                     non_final_next_state = non_final_next_state.permute([0,3,1,2])
                     batch_target_next[non_final_mask] = self.target_net(non_final_next_state).max(1)[0]
             
-                expected_state_action_values = ( batch_target_next*self.gamma ) + reward_batch
+                expected_state_action_values = ( batch_target_next*self.gamma ) + r_batch
                 criterion = nn.SmoothL1Loss()
                 loss = criterion(batch_policy, expected_state_action_values)
                 
@@ -237,7 +236,7 @@ class Agent_DQN(Agent):
             
             self.last_thirty.append(t_reward)
             
-            # Calculate and log average reward over the last 30 episodes
+            # calc and log average reward over the last 30 episodes
             logger.info("episode=%d average_reward_last_30=%.4f", e, np.mean(self.last_thirty))
 
             if e % 10 == 0:
