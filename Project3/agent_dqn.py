@@ -98,7 +98,7 @@ class Agent_DQN(Agent):
         # initialize counters
         self.episode = 0
         self.action_steps_done = 0
-        self.steps = 0
+        self.step = 0
 
         # tracking the last 30 runs
         self.last_thirty = deque(maxlen=30)
@@ -227,11 +227,11 @@ class Agent_DQN(Agent):
                 torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), self.clip_gradient)
                 self.optimizer.step()
                                 
-                self.step_counter += 1
-                if self.step_counter % 100 == 0:
+                self.step += 1
+                if self.step % 100 == 0:
                     logger.info(
                         "step=%d epsilon=%.6f",
-                        self.step_counter,
+                        self.step,
                         self.epsilon_threshold
                     )
                                 
