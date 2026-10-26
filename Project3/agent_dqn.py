@@ -72,9 +72,9 @@ class Agent_DQN(Agent):
         self.policy_net = DQN().to(self.device)
         self.target_net = DQN().to(self.device)
 
-        # state disctionaries
-        self.policy_net.load_state_dict(torch.load(self.model_path, map_location=torch.device(self.device)))
-        self.target_net.load_state_dict(self.policy_net.state_dict())
+        # state disctionaries?
+        # self.policy_net.load_state_dict(torch.load(self.model_path, map_location=torch.device(self.device)))
+        # self.target_net.load_state_dict(self.policy_net.state_dict())
 
         # docs: 
         self.optimizer = optim.AdamW(self.policy_net.parameters(), lr=self.learning_rate, amsgrad=True)
@@ -94,7 +94,7 @@ class Agent_DQN(Agent):
         if args.test_dqn:
             self.policy_net.load_state_dict(torch.load(self.model_path, map_location=self.device))
             self.policy_net.eval()
-            print('loading trained model')
+            print(f"Loading trained model: {self.model_path}")
 
         logging.info("episode, epsilon, rolling average (30 games), average loss, average Q values")
     
@@ -243,5 +243,6 @@ class Agent_DQN(Agent):
                 logger.info("episode=%d reward=%.4f max_steps=%d", e, t_reward, t_i,)
 
             if e % 100 == 0:
-                model_path = f"model_{e}.pth"
+                model_path = f"model_{self.filename}.pth" # overwrite for now
                 torch.save(self.policy_net.state_dict(), model_path)
+                print(f"Saved model: {self.model_path}")
