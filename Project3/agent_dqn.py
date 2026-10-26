@@ -72,9 +72,19 @@ class Agent_DQN(Agent):
         self.policy_net = DQN().to(self.device)
         self.target_net = DQN().to(self.device)
 
-        # state disctionaries?
-        # self.policy_net.load_state_dict(torch.load(self.model_path, map_location=torch.device(self.device)))
-        # self.target_net.load_state_dict(self.policy_net.state_dict())
+        self.target_net.load_state_dict(self.policy_net.state_dict())
+        self.target_net.eval()
+
+        if args.test_dqn:
+            if not os.path.exists(self.model_path):
+                raise FileNotFoundError(
+                    f"Model not found: {self.model_path}"
+                )
+
+            self.policy_net.load_state_dict(
+                torch.load(self.model_path, map_location=self.device)
+            )
+            self.policy_net.eval()
 
         # docs: 
         self.optimizer = optim.AdamW(self.policy_net.parameters(), lr=self.learning_rate, amsgrad=True)
@@ -89,12 +99,6 @@ class Agent_DQN(Agent):
 
         # tracking the last 30 runs
         self.last_thirty = deque(maxlen=30)
-
-        # for running with --test_dqn
-        if args.test_dqn:
-            self.policy_net.load_state_dict(torch.load(self.model_path, map_location=self.device))
-            self.policy_net.eval()
-            print(f"Loading trained model: {self.model_path}")
 
         logging.info("episode, epsilon, rolling average (30 games), average loss, average Q values")
     
