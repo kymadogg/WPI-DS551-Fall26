@@ -10,17 +10,19 @@ import argparse
 import torch #type: ignore
 import torch.nn.functional as F #type: ignore
 import torch.optim as optim #type: ignore
-
+from agent_hyperparams import Params
 from agent import Agent
 from dqn_model import DQN
 """
 you can import any package and define any extra function as you need
 """
 
+# maybe this should be removed?
 torch.manual_seed(595)
 np.random.seed(595)
 random.seed(595)
 
+hyp = Params()
 # logging.basicConfig(filename="dqn_train_50k.log",
 #                     format='',
 #                     filemode='w')
@@ -30,46 +32,25 @@ random.seed(595)
 
 
 # TODO: make arguments to pass into main
-EPSILON_START = 0.9
-EPSILON_END = 0.025
-LEARNING_RATE = 1e-4
-BATCH_SIZE = 32
-GAMMA = 0.99
-REPLAY_MEMORY_SIZE = 10_000
-START_REPLAY_MEMORY_SIZE = 5_000
-STEPS_FOR_UPDATE = 5_000
+
+# hyper params (hardcode incase import/ arg errors are made by accident)
 
 
-# Select to use CPU, CUDA, or MPS
+# hardware selection
 device = torch.device(
     "cuda" if torch.cuda.is_available() else
     "cpu"
 )
 
-# Define the transition tuple to store state transitions
+# transition 4 tuple
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
-
-class ReplayBuffer(object):
-
-    def __init__(self, capacity):
-        self.memory = deque([], maxlen=capacity)
-
-    def push(self, *args):
-        self.memory.append(Transition(*args))
-
-    def sample(self, BATCH_SIZE):
-        return random.sample(self.memory, BATCH_SIZE)
-
-    def __len__(self):
-        return len(self.memory)
-    
     
 class Agent_DQN(Agent):
     def __init__(self, env, args):
         """
         Initialize everything you need here.
         For example: 
-            paramters for neural network  
+            parameters for neural network  
             initialize Q net and target Q net
             parameters for repaly buffer
             parameters for q-learning; decaying epsilon-greedy
@@ -79,7 +60,7 @@ class Agent_DQN(Agent):
 
         # arguments
         self.trials = args.trials
-        self.decay = (EPSILON_START - EPSILON_END) / self.trials
+        self.decay = (hyp.eps_start - hyp.eps_end) / self.trials
         self.filename = args.name
 
         logging.basicConfig(filename=f"dqn_train_{args.name}.log",
@@ -98,11 +79,11 @@ class Agent_DQN(Agent):
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()  
         
-        self.optimizer = optim.AdamW(self.policy_net.parameters(), lr=LEARNING_RATE, amsgrad=True)
-        self.replay_buffer = ReplayBuffer(REPLAY_MEMORY_SIZE)
+        self.optimizer = optim.AdamW(self.policy_net.parameters(), lr=hyp.learn_rate , amsgrad=True)
+        self.memory = deque([], maxlen=hyp.replay_mem)
 
         self.env = env
-        self.eps = EPSILON_START
+        self.eps = hyp.eps_start
 
         # tracking the last 30 runs
         self.last_thirty = deque(maxlen=30)
@@ -111,9 +92,8 @@ class Agent_DQN(Agent):
             self.policy_net.load_state_dict(torch.load(self.model_path, map_location=device))
             self.policy_net.eval()
             print('loading trained model')
-
-        logging.info("episode, epsilon, rolling average (30 games), average loss, average Q values")
-    
+        logging.info("DATA FOR PLOTTING LATER")
+        logging.info("episode, epsilon, episode reward, rolling average (30 games), average loss, average Q values")
 
     def init_game_setting(self):
         """
@@ -135,42 +115,37 @@ class Agent_DQN(Agent):
                 the predicted action from trained model
         """
         observation = torch.tensor(observation, dtype=torch.float32).unsqueeze(0).permute(0, 3, 1, 2).to(device) 
-        # format tensor(BATCH_SIZE, channels, height, width)
+        # format tensor(hyp.batch_sz, channels, height, width)
         
-        if random.random() < self.eps and not test:  # Exploration
-            return self.env.get_random_action()
-        else:  # Exploitation
+        # explore and exploit
+        if random.random() < self.eps and not test:
+            return self.env.get_random_action() # exploration: random action
+        else:  
             with torch.no_grad():
                 q_values = self.policy_net(observation)
-                action = q_values.max(1)[1].item()  # Get the index (action) with the highest Q-value
-        # implementation 
+                action = q_values.max(1)[1].item()  # exploitation: get action with highest q value
         return action
     
-    # def push(self):
-    #     """ You can add additional arguments as you need. 
-    #     Push new data to buffer and remove the old one if the buffer is full.
-        
-    #     Hints:
-    #     -----
-    #         you can consider deque(maxlen = 10000) list
-    #     """
-    #     ###########################
-    #     # YOUR IMPLEMENTATION HERE #
-        
-    #     ###########################
+    def push(self, state, action, next_state, reward):
+        """
+        Push a transition into the replay buffer.
+
+        Old transitions are automatically removed when the
+        buffer reaches its maximum capacity.
+        """
+        self.memory.append(
+            Transition(state, action, next_state, reward)
+        )
         
         
-    # def replay_buffer(self):
-    #     """ You can add additional arguments as you need.
-    #     Select batch from buffer.
-    #     """
-    #     ###########################
-    #     # YOUR IMPLEMENTATION HERE #
-        
-        
-        
-    #     ###########################
-    #     return 
+    def replay_buffer(self):
+        """
+        Randomly sample a batch of transitions from memory.
+
+        Returns:
+            transitions: List of sampled transitions.
+        """
+        return random.sample(self.memory, hyp.batch_sz) 
         
 
     def train(self):
@@ -179,7 +154,7 @@ class Agent_DQN(Agent):
         """
         global_steps = 0
 
-        for episode in range(self.trials):
+        for episode in range(self.trials): # loop through episodes
            
             episode_steps = 0
             episode_reward = 0
@@ -188,57 +163,78 @@ class Agent_DQN(Agent):
             total_q_value = 0
             loss_count = 0
 
-            observation = self.env.reset()  
+            obs = self.env.reset()  
             
-            while True:
-                action = self.make_action(observation, test=False)
-                next_observation, reward, done, truncated, info = self.env.step(action)
+            while True: # while episode is still alive 
+                action = self.make_action(obs, test=False) # select action with eps greedy
+                next_obs, reward, done, truncated, info = self.env.step(action)
                 
-                if done or truncated: break
+                if done or truncated: break # end episode if done or trunicated
 
-                self.replay_buffer.push(observation, action, next_observation, reward)
-                observation = next_observation
+                self.push(obs, action, next_obs, reward) # store transition in memeory
+
+                # move to next state and update stats
+                obs = next_obs
                 episode_reward += reward
                 episode_steps += 1
                 global_steps += 1
-                
-                if len(self.replay_buffer) >= START_REPLAY_MEMORY_SIZE and len(self.replay_buffer) >= BATCH_SIZE:
+
+                # dont start learning until memory has enough episodes (maybe should have made this lower...)
+                if len(self.memory) >= hyp.st_replay_mem  and len(self.memory) >= hyp.batch_sz:
                     step_loss, step_q_value = self.update_policy()
                     total_loss += step_loss
                     total_q_value += step_q_value
                     loss_count += 1
-                    
-                if global_steps % STEPS_FOR_UPDATE == 0:
+
+                # sync target network with policy network
+                if global_steps % hyp.update_steps == 0:
                     self.target_net.load_state_dict(self.policy_net.state_dict())  
                     global_steps = 0
-                    
+
+            # metric calculations
             avg_loss = total_loss / loss_count if loss_count > 0 else 0
             avg_q_val = total_q_value / loss_count if loss_count > 0 else 0
 
             self.last_thirty.append(episode_reward)
             rolling_avg = np.mean(self.last_thirty)
-                
-            logging.info(f"{episode}, {self.eps:.4f}, {rolling_avg:.4f}, {avg_loss:.4f}, {avg_q_val:.4f}")
 
+            # logging for later plotting
+            logging.info(f"{episode}, {self.eps:.4f}, {episode_reward:.4f}, {rolling_avg:.4f}, {avg_loss:.4f}, {avg_q_val:.4f}")
+
+            # save model if above a rolling average threshold
             if rolling_avg > 0:
                 torch.save(self.policy_net.state_dict(), f'model_{self.filename}.pth') # overwrite so latest always exists
-                
-            self.eps = max(EPSILON_END, self.eps - self.decay)
+
+            if self.trials / 2 == episode: # halfway point for comparaison
+                torch.save(self.policy_net.state_dict(), f'model_{self.filename}_halfway.pth') # overwrite so latest always exists
+            
+            # increment episilon
+            self.eps = max(hyp.eps_end, self.eps - self.decay)
 
     def update_policy(self):
+        """
+        Update the policy network using a random batch from replay memory.
 
-        transitions = self.replay_buffer.sample(BATCH_SIZE)
+        Samples transitions, computes current and target Q-values, calculates
+        the Huber loss, and performs one optimization step with gradient clipping.
+
+        Returns:
+            tuple[float, float]:
+                The loss value and mean predicted Q-value for the sampled batch.
+        """
+
+        transitions = self.replay_buffer() # returns a random sample from memory
         batch = Transition(*zip(*transitions))
         
-        # Convert batch data to numpy arrays before converting to tensors
+        # convert batch --> numpy --> tensor
         state_batch = torch.tensor(np.array(batch.state), dtype=torch.float32).to(device)
-        state_batch = state_batch.permute(0, 3, 1, 2)  # Permute to (BATCH_SIZE, channels, height, width)
+        state_batch = state_batch.permute(0, 3, 1, 2)  # pm to (hyp.batch_sz, channels, height, width)
 
         action_batch = torch.tensor(np.array(batch.action)).unsqueeze(1).to(device)
         reward_batch = torch.tensor(np.array(batch.reward), dtype=torch.float32).to(device).unsqueeze(1)
 
         next_state_batch = torch.tensor(np.array(batch.next_state), dtype=torch.float32).to(device)
-        next_state_batch = next_state_batch.permute(0, 3, 1, 2)  # Permute to (BATCH_SIZE, channels, height, width)
+        next_state_batch = next_state_batch.permute(0, 3, 1, 2)  # pm to (hyp.batch_sz, channels, height, width)
 
         # Compute Q-values for current state
         q_values = self.policy_net(state_batch).gather(1, action_batch)
@@ -247,12 +243,12 @@ class Agent_DQN(Agent):
         with torch.no_grad():
             next_q_values = self.target_net(next_state_batch).max(1)[0].unsqueeze(1)
             
-        expected_q_values = reward_batch + (GAMMA * next_q_values)
+        expected_q_values = reward_batch + (hyp.gamma * next_q_values)
 
-        # Compute loss (Huber loss)
+        # huber loss
         huber_loss = F.smooth_l1_loss(q_values, expected_q_values)
 
-        # Optimize the policy network
+        # policy network optimization
         self.optimizer.zero_grad()
         huber_loss.backward()
         torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 1)
