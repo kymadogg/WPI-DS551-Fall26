@@ -10,4 +10,4 @@
 #SBATCH --job-name="P3"
 
 source activate myenv
-python main.py --train_dqn
+python main.py --train_dqn -name "refactor" --trials 100_000

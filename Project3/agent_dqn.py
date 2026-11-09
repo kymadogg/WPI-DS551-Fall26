@@ -58,7 +58,7 @@ class Agent_DQN(Agent):
         """
         super(Agent_DQN,self).__init__(env)
 
-        # arguments
+        # arguments for trainung
         self.trials = args.trials
         self.decay = (hyp.eps_start - hyp.eps_end) / self.trials
         self.filename = args.name
