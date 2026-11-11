@@ -29,22 +29,22 @@ class DQN(nn.Module):
         """
         super(DQN, self).__init__()
 
-        # CV = conv 2D layers accoring to openCV docs/research
+        # CV --> conv 2D layers for feature extraction
         self.conv1 = nn.Conv2d(in_channels, out_channels=32, kernel_size=8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
 
         # calc the size of the flattened features after the layers
         # there are images of 84x84
-        def conv2d_size_out(size, kernel_size, stride):
+        def conv2d_output(size, kernel_size, stride):
             return (size - (kernel_size - 1) - 1) // stride + 1
 
         s = 84  # image dimension
-        s = conv2d_size_out(s, kernel_size=8, stride=4)  # post layer 1
-        s = conv2d_size_out(s, kernel_size=4, stride=2)  # post layer 2
-        s = conv2d_size_out(s, kernel_size=3, stride=1)  # post layer 3
+        s = conv2d_output(s, kernel_size=8, stride=4)  # post layer 1
+        s = conv2d_output(s, kernel_size=4, stride=2)  # post layer 2
+        s = conv2d_output(s, kernel_size=3, stride=1)  # post layer 3
 
-        l_input_sz = s * s * 64  # 64 is the number of filters from latyer 3
+        l_input_sz = s * s * 64  # 64 = filters from latyer 3
 
         # connected layers
         self.fc1 = nn.Linear(l_input_sz, 512)

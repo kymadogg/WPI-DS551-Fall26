@@ -23,17 +23,9 @@ np.random.seed(595)
 random.seed(595)
 
 hyp = Params()
-# logging.basicConfig(filename="dqn_train_50k.log",
-#                     format='',
-#                     filemode='w')
-
-# logger = logging.getLogger()
-# logger.setLevel(logging.DEBUG)
 
 
 # TODO: make arguments to pass into main
-
-# hyper params (hardcode incase import/ arg errors are made by accident)
 
 
 # hardware selection
@@ -70,7 +62,7 @@ class Agent_DQN(Agent):
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
 
-        self.model_path = os.path.join(os.getcwd(),f'model_{args.name}.pth')
+        self.model_path = os.path.join(os.getcwd(),f'model_refactor.pth')
         print(f'Model path: {self.model_path}')
         print(f"Model found: {os.path.exists(self.model_path)}")
 
@@ -203,7 +195,7 @@ class Agent_DQN(Agent):
 
             # save model if above a rolling average threshold
             if rolling_avg > 0:
-                torch.save(self.policy_net.state_dict(), f'model_{self.filename}.pth') # overwrite so latest always exists
+                torch.save(self.policy_net.state_dict(), f'model_refactor.pth') # overwrite so latest always exists
 
             if self.trials / 2 == episode: # halfway point for comparaison
                 torch.save(self.policy_net.state_dict(), f'model_{self.filename}_halfway.pth') # overwrite so latest always exists
